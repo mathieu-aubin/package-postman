@@ -17,9 +17,9 @@ echo "Testing Postman version"
 
 targetName=""
 if [ -z $curlExists ]; then
-  targetName=$(wget -S --spider "https://dl.pstmn.io/download/latest/linux64" 2>&1 | grep "Content-Disposition" | awk -F '=' '{ print $2 }')
+  targetName=$(wget -S --spider "https://dl.pstmn.io/download/latest/linux64" 2>&1 | grep -i "Content-Disposition" | awk -F '=' '{ print $2 }')
 else
-  targetName=$(curl -sI "https://dl.pstmn.io/download/latest/linux64" | grep "content-disposition" | awk -F '=' '{ print $2 }')
+  targetName=$(curl -sI "https://dl.pstmn.io/download/latest/linux64" | grep -i "content-disposition" | awk -F '=' '{ print $2 }')
 fi
 
 versionMaj=$(echo "$targetName" | awk -F '-' '{ print $4 }' | awk -F '.' '{ print $1 }')
@@ -74,21 +74,22 @@ if [ -d "postman_$version" ]; then
 fi
 
 echo "Creating 'postman_$version' folder structure and files"
-mkdir -m 0755 -p "postman_$version"
 
-mkdir -m 0755 -p "postman_$version/usr/share/applications"
-touch "postman_$version/usr/share/applications/postman.desktop"
+mkdir -m 0755 -p \
+  "postman_$version/usr/share/applications" \
+  "postman_$version/usr/share/icons/hicolor/128x128/apps" \
+  "postman_$version/opt/postman" \
+  "postman_$version/DEBIAN"
 
-mkdir -m 0755 -p "postman_$version/usr/share/icons/hicolor/128x128/apps"
-
-mkdir -m 0755 -p "postman_$version/opt/postman"
-
-mkdir -m 0755 -p "postman_$version/DEBIAN"
-touch "postman_$version/DEBIAN/control" "postman_$version/DEBIAN/postinst" "postman_$version/DEBIAN/prerm"
+touch \
+  "postman_$version/usr/share/applications/postman.desktop" \
+  "postman_$version/DEBIAN/control" \
+  "postman_$version/DEBIAN/postinst" \
+  "postman_$version/DEBIAN/prerm"
 
 echo "Copying files"
-cp "Postman/app/resources/app/assets/icon.png" "postman_$version/usr/share/icons/hicolor/128x128/apps/postman.png"
-cp -R "Postman/"* "postman_$version/opt/postman/"
+cp Postman/app/resources/app/assets/icon.png "postman_$version/usr/share/icons/hicolor/128x128/apps/postman.png"
+cp -R Postman/* "postman_$version/opt/postman/"
 
 echo "Testing whether to use '-e'"
 lines=$(echo "\n" | wc -l)
@@ -108,7 +109,7 @@ echo $e "if [ -f \"/usr/bin/postman\" ]; then\n\tsudo rm -f \"/usr/bin/postman\"
 
 echo "Setting modes"
 
-chmod 0775 "postman_$version/usr/share/applications/postman.desktop"
+chmod 0644 "postman_$version/usr/share/applications/postman.desktop"
 
 chmod 0775 "postman_$version/DEBIAN/control"
 chmod 0775 "postman_$version/DEBIAN/postinst"
